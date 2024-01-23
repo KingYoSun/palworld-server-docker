@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# setup wireproxy
+sudo cp ${WIREPROXY_CONFIG_PATH} /etc/wireguard/wg0.conf
+sudo wg-quick up wg0
+
+# start palworld server
 STARTCOMMAND="./PalServer.sh -port=${PORT} -players=${PLAYERS}"
 
 if [ "${COMMUNITY}" = true ]; then

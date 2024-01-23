@@ -4,6 +4,7 @@ LABEL maintainer="thijs@loef.dev"
 RUN apt-get update && apt-get install -y --no-install-recommends \
     xdg-user-dirs=0.17-2 \
     procps=2:3.3.17-5 \
+    wireguard sudo iproute2 openresolv iptables netcat iputils-ping net-tools \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
