@@ -8,10 +8,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-ENV PORT=8211 \
+ENV PORT= \
     PUID=1000 \
     PGID=1000 \
-    PLAYERS=16 \
+    PLAYERS= \
     MULTITHREADING=false \
     COMMUNITY=false \
     PUBLIC_IP= \
@@ -19,7 +19,9 @@ ENV PORT=8211 \
     SERVER_PASSWORD= \
     SERVER_NAME= \
     ADMIN_PASSWORD= \
-    UPDATE_ON_BOOT=true
+    UPDATE_ON_BOOT=true \
+    RCON_ENABLED=true \
+    RCON_PORT=25575
 
 COPY ./scripts/* /home/steam/server/
 RUN chmod +x /home/steam/server/init.sh /home/steam/server/start.sh
@@ -29,5 +31,5 @@ WORKDIR /home/steam/server
 HEALTHCHECK --start-period=5m \
     CMD pgrep "PalServer-Linux" > /dev/null || exit 1
 
-EXPOSE ${PORT}
+EXPOSE ${PORT} ${RCON_PORT}
 ENTRYPOINT ["/home/steam/server/init.sh"]
