@@ -8,9 +8,10 @@
 [View on Docker Hub](https://hub.docker.com/r/thijsvanloef/palworld-server-docker)
 
 > [!TIP]
-> Unsure how to get started? Check out the [this guide I wrote!](https://tice.tips/containerization/palworld-server-docker/)  
+> Unsure how to get started? Check out the [this guide I wrote!](https://tice.tips/containerization/palworld-server-docker/)
 
-This is a Docker container to help you get started with hosting your own [Palworld](https://store.steampowered.com/app/1623730/Palworld/) dedicated server.
+This is a Docker container to help you get started with hosting your own
+[Palworld](https://store.steampowered.com/app/1623730/Palworld/) dedicated server.
 
 This Docker container has been tested and will work on both Linux (Ubuntu/Debian) and Windows 10.
 
@@ -21,7 +22,7 @@ This Docker container has been tested and will work on both Linux (Ubuntu/Debian
 
 ## How to use
 
-Keep in mind that you'll need to change the [environment variables](##Environment-variables).
+Keep in mind that you'll need to change the [environment variables](#environment-variables).
 
 ### Docker Compose
 
@@ -41,9 +42,10 @@ services:
          - PGID=1000
          - PORT=8211 # Optional but recommended
          - PLAYERS=16 # Optional but recommended
-         - MULTITHREADING=false
+         - MULTITHREADING=true
          - RCON_ENABLED=true
          - RCON_PORT=25575
+         - TZ=UTC
          - ADMIN_PASSWORD="adminPasswordHere"
          - COMMUNITY=false  # Enable this if you want your server to show up in the community servers tab, USE WITH SERVER_PASSWORD!
          # Enable the environment variables below if you have COMMUNITY=true
@@ -51,10 +53,6 @@ services:
          # - SERVER_NAME="World of Pals"
       volumes:
          - ./palworld:/palworld/
-   rcon:
-      image: outdead/rcon:latest
-      entrypoint: ['/rcon', '-a', 'palworld:25575', '-p', 'adminPasswordHere']
-      profiles: ['rcon'] 
 ```
 
 ### Docker Run
@@ -67,15 +65,26 @@ docker run -d \
     -p 8211:8211/udp \
     -p 27015:27015/udp \
     -v ./<palworld-folder>:/palworld/ \
-    -e PLAYERS=16 \
-    -e PORT=8211 \
     -e PUID=1000 \
     -e PGID=1000 \
+    -e PORT=8211 \
+    -e PLAYERS=16 \
+    -e MULTITHREADING=true \
+    -e RCON_ENABLED=true \
+    -e RCON_PORT=25575 \
+    -e TZ=UTC \
+    -e ADMIN_PASSWORD="adminPasswordHere" \
     -e COMMUNITY=false \
     --restart unless-stopped \
-    thijsvanloef/palworld-server-docker
+    thijsvanloef/palworld-server-docker:latest
 
 ```
+
+### Kubernetes
+
+All files you will need to deploy this container to kubernetes are located in the [k8s folder](k8s/).
+
+Follow the steps in the [README.md here](k8s/readme.md) to deploy it.
 
 ### Environment variables
 
@@ -84,9 +93,12 @@ It is highly recommended you set the following environment values before startin
 
 * PLAYERS
 * PORT
+* PUID
+* PGID
 
 | Variable         | Info                                                                                                                                                                                               | Default Values | Allowed Values |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|----------------|
+| TZ           | Timezone used for time stamping backup server                                                                                                                                             | UTC        | See [TZ Identifiers](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#Time_Zone_abbreviations)            |
 | PLAYERS*         | Max amount of players that are able to join the server                                                                                                                                             | 16             | 1-31           |
 | PORT*            | UDP port that the server will expose                                                                                                                                                               | 8211           | 1024-65535     |
 | PUID*            | The uid of the user the server should run as                                                                                                                                                       | 1000           | !0             |
@@ -94,13 +106,14 @@ It is highly recommended you set the following environment values before startin
 | MULTITHREADING** | Improves performance in multi-threaded CPU environments. It is effective up to a maximum of about 4 threads, and allocating more than this number of threads does not make much sense.             | false          | true/false     |
 | COMMUNITY        | Whether or not the server shows up in the community server browser (USE WITH SERVER_PASSWORD)                                                                                                      | false          | true/false     |
 | PUBLIC_IP        | You can manually specify the global IP address of the network on which the server running.If not specified, it will be detected automatically. If it does not work well, try manual configuration. |                | x.x.x.x        |
-| PUBLIC_PORT      | You can manually specify the port number of the network on which the server running.If not specified, it will be detected automatically. If it does not work well, try manual configuration.       |                | x.x.x.x        |
+| PUBLIC_PORT      | You can manually specify the port number of the network on which the server running.If not specified, it will be detected automatically. If it does not work well, try manual configuration.       |                | 1024-65535        |
 | SERVER_NAME      | A name for your community server                                                                                                                                                                   |                | "string"       |
 | SERVER_PASSWORD  | Secure your community server with a password                                                                                                                                                       |                | "string"       |
 | ADMIN_PASSWORD   | Secure administration access in the server with a password                                                                                                                                         |                | "string"       |
 | UPDATE_ON_BOOT** | Update/Install the server when the docker container starts (THIS HAS TO BE ENABLED THE FIRST TIME YOU RUN THE CONTAINER)                                                                           | true           | true/false     |
 | RCON_ENABLED     | Enable RCON for the Palworld server                                                                                                                                                                | true           | true/false     |
 | RCON_PORT        | RCON port to connect to                                                                                                                                                                            | 25575          | 1024-65535     |
+| QUERY_PORT       | Query port used to communicate with Steam servers                                                                                                                                                  | 27015          | 1024-65535     |
 
 *highly recommended to set
 
@@ -108,29 +121,31 @@ It is highly recommended you set the following environment values before startin
 
 ### Game Ports
 
-| Port  | Info             | note                                           |
-|-------|------------------|------------------------------------------------|
-| 8211  | Game Port (UDP)  |                                                |
-| 27015 | Query Port (UDP) | You are not able to change this port as of now |
-| 25575 | RCON Port (TCP)  |                                                |
+| Port  | Info             |
+|-------|------------------|
+| 8211  | Game Port (UDP)  |
+| 27015 | Query Port (UDP) |
+| 25575 | RCON Port (TCP)  |
 
 ## Using RCON
 
 RCON is enabled by default for the palworld-server-docker image.
-Using the RCON commands is quite easy:
+Opening the RCON cli is quite easy:
 
 ```bash
-docker compose run --rm rcon "Server Command"
+docker exec -it palworld-server rcon-cli
 ```
+
+This will open a CLI that use can use to write commands to the Palworld Server.
 
 ### List of server commands
 
-| Command                           | Info                                                |
-|-----------------------------------|-----------------------------------------------------|
+| Command                          | Info                                                |
+|----------------------------------|-----------------------------------------------------|
 | Shutdown {Seconds} {MessageText} | The server is shut down after the number of Seconds |
 | DoExit                           | Force stop the server.                              |
 | Broadcast                        | Send message to all player in the server            |
-| KickPlayer {SteamID}t            | Kick player from the server..                       |
+| KickPlayer {SteamID}             | Kick player from the server..                       |
 | BanPlayer {SteamID}              | BAN player from the server.                         |
 | TeleportToPlayer {SteamID}       | Teleport to current location of target player.      |
 | TeleportToMe {SteamID}           | Target player teleport to your current location     |
@@ -139,6 +154,30 @@ docker compose run --rm rcon "Server Command"
 | Save                             | Save the world data.                                |
 
 For a full list of commands go to: [https://tech.palworldgame.com/server-commands](https://tech.palworldgame.com/server-commands)
+
+## Creating a backup
+
+To create a backup of the game's save at the current point in time, use the command.
+
+```bash
+docker exec palworld-server backup
+```
+
+This will create a backup at `/palworld/backups/`
+
+## Editing Server Settings
+
+When the server starts, a `PalWorldSettings.ini` file will be created in the following location: `<mount_folder>/Pal/Saved/Config/LinuxServer/PalWorldSettings.ini`
+
+Any changes made there will be applied to the Server on next boot.
+
+Please keep in mind that the ENV variables will always overwrite the changes made to `PalWorldSettings.ini`.
+
+For a more detailed list of explanations of server settings go to: [shockbyte](https://shockbyte.com/billing/knowledgebase/1189/How-to-Configure-your-Palworld-server.html)
+
+> [!TIP]
+> If the `<mount_folder>/Pal/Saved/Config/LinuxServer/PalWorldSettings.ini` is empty,
+> delete the file and restart the server, a new file with content will be created.
 
 ## Reporting Issues/Feature Requests
 

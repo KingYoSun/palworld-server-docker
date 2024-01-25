@@ -39,6 +39,10 @@ if [ -n "${ADMIN_PASSWORD}" ]; then
     STARTCOMMAND="${STARTCOMMAND} -adminpassword=${ADMIN_PASSWORD}"
 fi
 
+if [ -n "${QUERY_PORT}" ]; then
+    STARTCOMMAND="${STARTCOMMAND} -queryport=${QUERY_PORT}"
+fi
+
 if [ "${MULTITHREADING}" = true ]; then
     STARTCOMMAND="${STARTCOMMAND} -useperfthreads -NoAsyncLoadingThread -UseMultithreadForDS"
 fi
@@ -67,6 +71,13 @@ if [ -n "${RCON_PORT}" ]; then
     echo "RCON_PORT=${RCON_PORT}"
     sed -i "s/RCONPort=[0-9]*/RCONPort=$RCON_PORT/" /palworld/Pal/Saved/Config/LinuxServer/PalWorldSettings.ini
 fi
+
+# Configure RCON settings
+cat >~/.rcon-cli.yaml  <<EOL
+host: localhost
+port: ${RCON_PORT}
+password: ${ADMIN_PASSWORD}
+EOL
 
 printf "\e[0;32m*****STARTING SERVER*****\e[0m\n"
 echo "${STARTCOMMAND}"

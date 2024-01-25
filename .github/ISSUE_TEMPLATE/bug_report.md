@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Think you encountered a bug or error? Use this issue template.
 title: ''
 labels: ''
 assignees: ''
@@ -28,7 +28,7 @@ A clear and concise description of what you expected to happen.
 
 If applicable, add screenshots to help explain your problem.
 
-## Desktop (please complete the following information):
+## Desktop (please complete the following information)
 
 - OS: [e.g. Windows 10, Ubuntu, Debian]
 - Browser [e.g. chrome, safari]
