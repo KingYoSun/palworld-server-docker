@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN wget -q https://github.com/itzg/rcon-cli/releases/download/1.6.4/rcon-cli_1.6.4_linux_amd64.tar.gz -O - | tar -xz && \
-    mv rcon-cli /usr/bin/rcon-cli
+RUN wget -q https://github.com/gorcon/rcon-cli/releases/download/v0.10.3/rcon-0.10.3-amd64_linux.tar.gz -O - | tar -xz && \
+    mv rcon-0.10.3-amd64_linux/rcon /usr/bin/rcon-cli && \
+    rmdir /tmp/dumps
 
 ENV PORT= \
     PUID=1000 \
@@ -28,7 +29,8 @@ ENV PORT= \
     RCON_ENABLED=true \
     RCON_PORT=25575 \
     QUERY_PORT=27015 \
-    TZ=UTC
+    TZ=UTC \
+    SERVER_DESCRIPTION=
 
 COPY ./scripts/* /home/steam/server/
 RUN chmod +x /home/steam/server/init.sh /home/steam/server/start.sh /home/steam/server/backup.sh && \

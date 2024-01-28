@@ -5,6 +5,7 @@
 ![Docker Stars](https://img.shields.io/docker/stars/thijsvanloef/palworld-server-docker)
 ![Image Size](https://img.shields.io/docker/image-size/thijsvanloef/palworld-server-docker/latest)
 ![Discord](https://img.shields.io/discord/1200397673329594459?logo=discord&label=Discord&link=https%3A%2F%2Fdiscord.gg%2FUxBxStPAAE)
+[![Static Badge](https://img.shields.io/badge/README-0.15.0-blue?link=https%3A%2F%2Fgithub.com%2Fthijsvanloef%2Fpalworld-server-docker%2Fblob%2Fmain%2FREADME.md)](https://github.com/thijsvanloef/palworld-server-docker/blob/main/docs/kr/README.md)
 
 [Docker Hub에서 보기](https://hub.docker.com/r/thijsvanloef/palworld-server-docker)
 
@@ -176,7 +177,7 @@ docker exec -it palworld-server rcon-cli
 | Info                             | 서버 정보를 표시합니다.                            |
 | Save                             | 월드 정보를 저장합니다.                            |
 
-For a full list of commands go to: [https://tech.palworldgame.com/server-commands](https://tech.palworldgame.com/server-commands)
+전체 명령어 목록을 보려면 다음으로 이동하세요.: [https://tech.palworldgame.com/server-commands](https://tech.palworldgame.com/server-commands)
 
 ## 백업 만들기
 
