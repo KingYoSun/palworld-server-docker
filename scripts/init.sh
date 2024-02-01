@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# setup wireproxy
+sudo cp ${WIREPROXY_CONFIG_PATH} /etc/wireguard/wg0.conf
+sudo wg-quick up wg0
+
+# init palworld
 if [[ ! "${PUID}" -eq 0 ]] && [[ ! "${PGID}" -eq 0 ]]; then
     printf "\e[0;32m*****EXECUTING USERMOD*****\e[0m\n"
     usermod -o -u "${PUID}" steam

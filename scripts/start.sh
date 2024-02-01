@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# setup wireproxy
-sudo cp ${WIREPROXY_CONFIG_PATH} /etc/wireguard/wg0.conf
-sudo wg-quick up wg0
-
-# start palworld server
 if [ "${UPDATE_ON_BOOT}" = true ]; then
     printf "\e[0;32m*****STARTING INSTALL/UPDATE*****\e[0m\n"
     /home/steam/steamcmd/steamcmd.sh +@sSteamCmdForcePlatformType linux +@sSteamCmdForcePlatformBitness 64 +force_install_dir "/palworld" +login anonymous +app_update 2394010 validate +quit
