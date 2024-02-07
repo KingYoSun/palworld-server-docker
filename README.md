@@ -20,12 +20,20 @@
 This is a Docker container to help you get started with hosting your own
 [Palworld](https://store.steampowered.com/app/1623730/Palworld/) dedicated server.
 
-This Docker container has been tested and will work on both Linux (Ubuntu/Debian) and Windows 10.
+This Docker container has been tested and will work on Linux (Ubuntu/Debian), Windows 10 and macOS (including Apple Silicon).
 
 > [!IMPORTANT]
 > At the moment, Xbox GamePass/Xbox Console players will not be able to join a dedicated server.
 >
 > They will need to join players using the invite code and are limited to sessions of 4 players max.
+
+## Sponsors
+
+Massive shoutout to the following sponsors!
+
+<p align="center"><!-- markdownlint-disable-line --><!-- markdownlint-disable-next-line -->
+<!-- sponsors --><a href="https://github.com/ShoeBoom"><img src="https://github.com/ShoeBoom.png" width="50px" alt="ShoeBoom" /></a>&nbsp;&nbsp;<a href="https://github.com/doomhound188"><img src="https://github.com/doomhound188.png" width="50px" alt="doomhound188" /></a>&nbsp;&nbsp;<a href="https://github.com/AshishT112203"><img src="https://github.com/AshishT112203.png" width="50px" alt="AshishT112203" /></a>&nbsp;&nbsp;<a href="https://github.com/pabumake"><img src="https://github.com/pabumake.png" width="50px" alt="pabumake" /></a>&nbsp;&nbsp;<!-- sponsors -->
+</p>
 
 ## Server Requirements
 
@@ -155,8 +163,8 @@ It is highly recommended you set the following environment values before startin
 * PUID
 * PGID
 
-| Variable           | Info                                                                                                                                                                                                | Default Values | Allowed Values                                                                                             |
-|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|------------------------------------------------------------------------------------------------------------|
+| Variable           | Info                                                                                                                                                                                                | Default Values | Allowed Values |
+|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|---------------------------------------------------------------------------------------|
 | TZ                 | Timezone used for time stamping backup server                                                                                                                                                       | UTC            | See [TZ Identifiers](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#Time_Zone_abbreviations) |
 | PLAYERS*           | Max amount of players that are able to join the server                                                                                                                                              | 16             | 1-32                                                                                                       |
 | PORT*              | UDP port that the server will expose                                                                                                                                                                | 8211           | 1024-65535                                                                                                 |
@@ -181,17 +189,23 @@ It is highly recommended you set the following environment values before startin
 | AUTO_UPDATE_CRON_EXPRESSION  | Setting affects frequency of automatic updates. | 0 \* \* \* \* | Needs a Cron-Expression - See [Configuring Automatic Backups with Cron](#configuring-automatic-backups-with-cron) |
 | AUTO_UPDATE_ENABLED | Enables automatic updates | false | true/false |
 | AUTO_UPDATE_WARN_MINUTES | How long to wait to update the server, after the player were informed. | 30 | !0 |
+| AUTO_REBOOT_CRON_EXPRESSION  | Setting affects frequency of automatic updates. | 0 0 \* \* \* | Needs a Cron-Expression - See [Configuring Automatic Backups with Cron](#configuring-automatic-reboots-with-cron) |
+| AUTO_REBOOT_ENABLED | Enables automatic reboots | false | true/false |
+| AUTO_REBOOT_WARN_MINUTES | How long to wait to reboot the server, after the player were informed. | 5 | !0 |
+| DISCORD_WEBHOOK_URL | Discord webhook url found after creating a webhook on a discord server | | `https://discord.com/api/webhooks/<webhook_id>` |
+| DISCORD_CONNECT_TIMEOUT | Discord command initial connection timeout | 30 | !0 |
+| DISCORD_MAX_TIMEOUT | Discord total hook timeout | 30 | !0 |
+| DISCORD_PRE_UPDATE_BOOT_MESSAGE | Discord message sent when server begins updating | Server is updating... | "string" |
+| DISCORD_POST_UPDATE_BOOT_MESSAGE | Discord message sent when server completes updating | Server update complete! | "string" |
+| DISCORD_PRE_START_MESSAGE | Discord message sent when server begins to start | Server is started! | "string" |
+| DISCORD_PRE_SHUTDOWN_MESSAGE | Discord message sent when server begins to shutdown | Server is shutting down... | "string" |
+| DISCORD_POST_SHUTDOWN_MESSAGE | Discord message sent when server has stopped | Server is stopped! | "string" |
 
 *highly recommended to set
 
 ** Make sure you know what you are doing when running this option enabled
 
 *** Required for docker stop to save and gracefully close the server
-
-> [!IMPORTANT]
-> Boolean values used in environment variables are case-sensitive because they are used in the shell script.
->
-> They must be set using exactly `true` or `false` for the option to take effect.
 
 ### Game Ports
 
@@ -247,6 +261,46 @@ This will create a backup at `/palworld/backups/`
 
 The server will run a save before the backup if rcon is enabled.
 
+## Restore from a backup
+
+To restore from a backup, use the command:
+
+```bash
+docker exec -it palworld-server restore
+```
+
+The `RCON_ENABLED` environment variable must be set to `true` to use this command.
+> [!IMPORTANT]
+> If docker restart is not set to policy `always` or `unless-stopped` then the server will shutdown and will need to be
+> manually restarted.
+>
+> The example docker run command and docker compose file in [How to Use](#how-to-use) already uses the needed policy
+
+## Manually restore from a backup
+
+Locate the backup you want to restore in `/palworld/backups/` and decompress it.
+Need to stop the server before task.
+
+```bash
+docker compose down
+```
+
+Delete the old saved data folder located at `palworld/Pal/Saved/SaveGames/0/<old_hash_value>`.
+
+Copy the contents of the newly decompressed saved data folder `Saved/SaveGames/0/<new_hash_value>` to `palworld/Pal/Saved/SaveGames/0/<new_hash_value>`.
+
+Replace the DedicatedServerName inside `palworld/Pal/Saved/Config/LinuxServer/GameUserSettings.ini` with the new folder name.
+
+```ini
+DedicatedServerName=<new_hash_value>  # Replace it with your folder name.
+```
+
+Restart the game. (If you are using Docker Compose)
+
+```bash
+docker compose up -d
+```
+
 ## Configuring Automatic Backups with Cron
 
 The server is automatically backed up everynight at midnight according to the timezone set with TZ
@@ -259,7 +313,7 @@ BACKUP_CRON_EXPRESSION is a cron expression, in a Cron-Expression you define an 
 > This image uses Supercronic for crons
 > see [supercronic](https://github.com/aptible/supercronic#crontab-format)
 > or
-> [Crontab Generat](https://crontab-generator.org).
+> [Crontab Generator](https://crontab-generator.org).
 
 Set BACKUP_CRON_EXPRESSION to change the default schedule.
 Example Usage: If BACKUP_CRON_EXPRESSION to `0 2 * * *`, the backup script will run every day at 2:00 AM.
@@ -278,7 +332,7 @@ To be able to use automatic Updates with this Server the following environment v
 >
 > The example docker run command and docker compose file in [How to Use](#how-to-use) already use the needed policy
 
-Set AUTO_UPDATE_ENABLED enable or disable automatic backups (Default is disabled)
+Set AUTO_UPDATE_ENABLED enable or disable automatic updates (Default is disabled)
 
 AUTO_UPDATE_CRON_EXPRESSION is a cron expression, in a Cron-Expression you define an interval for when to run jobs.
 
@@ -286,9 +340,33 @@ AUTO_UPDATE_CRON_EXPRESSION is a cron expression, in a Cron-Expression you defin
 > This image uses Supercronic for crons
 > see [supercronic](https://github.com/aptible/supercronic#crontab-format)
 > or
-> [Crontab Generat](https://crontab-generator.org).
+> [Crontab Generator](https://crontab-generator.org).
 
 Set AUTO_UPDATE_CRON_EXPRESSION to change the default schedule.
+
+## Configuring Automatic Reboots with Cron
+
+To be able to use automatic reboots with this server RCON_ENABLED enabled.
+
+> [!IMPORTANT]
+>
+> If docker restart is not set to policy `always` or `unless-stopped` then the server will shutdown and will need to be
+> manually restarted.
+>
+> The example docker run command and docker compose file in [How to Use](#how-to-use) already use the needed policy
+
+Set AUTO_REBOOT_ENABLED enable or disable automatic reboots (Default is disabled)
+
+AUTO_REBOOT_CRON_EXPRESSION is a cron expression, in a Cron-Expression you define an interval for when to run jobs.
+
+> [!TIP]
+> This image uses Supercronic for crons
+> see [supercronic](https://github.com/aptible/supercronic#crontab-format)
+> or
+> [Crontab Generator](https://crontab-generator.org).
+
+Set AUTO_REBOOT_CRON_EXPRESSION to change the set the schedule, default is everynight at midnight according to the
+timezone set with TZ
 
 ## Editing Server Settings
 
@@ -367,6 +445,26 @@ Please keep in mind that the ENV variables will always overwrite the changes mad
 > Any changes made while the server is live will be overwritten when the server stops.
 
 For a more detailed list of explanations of server settings go to: [shockbyte](https://shockbyte.com/billing/knowledgebase/1189/How-to-Configure-your-Palworld-server.html)
+
+## Using discord webhooks
+
+1. Generate a webhook url for your discord server in your discord's server settings.
+
+2. Set the environment variable with the unique token at the end of the discord webhook url example: `https://discord.com/api/webhooks/1234567890/abcde`
+
+send discord messages with docker run:
+
+```sh
+-e DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/1234567890/abcde" \
+-e DISCORD_PRE_UPDATE_BOOT_MESSAGE="Server is updating..." \
+```
+
+send discord messages with docker compose:
+
+```yaml
+- DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/1234567890/abcde
+- DISCORD_PRE_UPDATE_BOOT_MESSAGE=Server is updating...
+```
 
 ## Reporting Issues/Feature Requests
 
